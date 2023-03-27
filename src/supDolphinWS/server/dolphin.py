@@ -46,24 +46,26 @@ class Dolphin():
       self.m = None
   def _read_bytes(self, addr, size):
     '''
-      addr: int
+      addr: int|None
       size: int
     '''
+    if addr is None: return None
     if MEM1_START <= addr <= MEM1_END-size:
       idx = addr-MEM1_START
-    elif MEM2_START <= addr <= MEM2_END-size and len(self.m) > MEM2_OFFSET:
+    elif MEM2_START <= addr <= MEM2_END-size and len(self.m.buf) > MEM2_OFFSET:
       idx = MEM2_OFFSET + addr-MEM2_START
     else: return None
     return self.m.buf[idx:idx+size].tobytes()
   def _write_bytes(self, addr, payload):
     '''
-      addr: int
+      addr: int|None
       payload: bytes
     '''
+    if addr is None: return None
     size = len(payload)
     if MEM1_START <= addr <= MEM1_END-size:
       idx = addr-MEM1_START
-    elif MEM2_START <= addr <= MEM2_END-size and len(self.m) > MEM2_OFFSET:
+    elif MEM2_START <= addr <= MEM2_END-size and len(self.m.buf) > MEM2_OFFSET:
       idx = MEM2_OFFSET + addr-MEM2_START
     else: return None
     self.m.buf[idx:idx+size] = payload
