@@ -8,7 +8,7 @@ from multiprocessing.shared_memory import SharedMemory
 MEM1_START = 0x80000000
 MEM1_END   = 0x81800000
 MEM2_START = 0x90000000
-MEM2_END   = 0x93000000
+MEM2_END   = 0x94000000
 MEM2_OFFSET = 0x4040000
 
 dolphinProcNames = \
