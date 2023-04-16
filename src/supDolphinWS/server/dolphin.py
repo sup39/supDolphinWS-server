@@ -5,6 +5,11 @@ import psutil
 import struct
 from multiprocessing.shared_memory import SharedMemory
 
+if os.name == 'nt':
+  from .memory_windows import try_get_memory as try_get_memory_direct
+else:
+  try_get_memory_direct = None
+
 MEM1_START = 0x80000000
 MEM1_END   = 0x81800000
 MEM2_START = 0x90000000
@@ -16,14 +21,23 @@ dolphinProcNames = \
   else {'dolphin-emu', 'dolphin-emu-qt2', 'dolphin-emu-wx'}
 
 def try_get_memory(pid):
-  try: return SharedMemory('dolphin-emu.'+str(pid))
-  except FileNotFoundError: return None
+  # newer Dolphin => SharedMemory
+  try:
+    return SharedMemory('dolphin-emu.'+str(pid))
+  except FileNotFoundError: pass
+  # old Dolphin (on windows) => direct memory access via win32 api
+  if try_get_memory_direct:
+    try:
+      return try_get_memory_direct(pid)
+    except:
+      import traceback
+      print(traceback.format_exc())
 
 def find_memory(exclude_pid={}):
   try: return next(
     (p.pid, m)
     for p in psutil.process_iter(['pid', 'name'])
-    if p.pid not in exclude_pid and p.name() in dolphinProcNames
+    if p.pid not in exclude_pid and p.name() in dolphinProcNames and p.status() == 'running'
     for m in [try_get_memory(p.pid)]
     if m is not None
   )
